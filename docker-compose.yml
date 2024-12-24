@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: user
+      POSTGRES_DB: todoapp
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db:/var/lib/postgresql
+    networks:
+      - backend-net
+
+  todo-api:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    container_name: todo-api
+    ports:
+      - "8080:8080"
+    networks:
+      - backend-net
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=todoapp;Username=user;Password=password; # Cadena de conexión para PostgreSQL
+    depends_on:
+      - postgres
+    volumes:
+      - ./environment/.env:/app/.env
+
+networks:
+  backend-net:
+    driver: bridge
+
+volumes:
+  db:
